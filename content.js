@@ -123,13 +123,13 @@ function scanPage() {
                 ratingCell.className = 'cf-rating-cell';
                 ratingCell.style.cssText = `
                     text-align: center;
-                    padding: 8px 4px;
+                    padding: 8px 2px;
                     font-weight: 700;
-                    font-size: 13px;
+                    font-size: 12px;
                     vertical-align: middle;
-                    width: 50px;
-                    min-width: 50px;
-                    max-width: 50px;
+                    width: 40px;
+                    min-width: 40px;
+                    max-width: 40px;
                 `;
                 
                 ratingCell.innerText = rating;
@@ -155,10 +155,10 @@ function scanPage() {
                 markedCount++;
             }
 
-            // 2. Mark Solved - Just dim the text, no checkmark
+            // 2. Mark Solved - Make text faded green
             if (globalSolvedSet.has(problemId)) {
-                // Subtle styling to show solved status
-                link.style.color = "#6b7280";
+                // Emerald green color for solved problems
+                link.style.color = "#016301";
                 link.style.textDecoration = "none";
             }
         }
@@ -176,12 +176,12 @@ function addRatingColumnHeader() {
     headerCell.innerText = 'Rating';
     headerCell.style.cssText = `
         text-align: center;
-        padding: 8px 4px;
+        padding: 8px 2px;
         font-weight: 600;
         vertical-align: middle;
-        width: 50px;
-        min-width: 50px;
-        max-width: 50px;
+        width: 40px;
+        min-width: 40px;
+        max-width: 40px;
     `;
     
     // Insert rating header at the correct position (after Practice, before Note)
@@ -196,24 +196,39 @@ function addRatingColumnHeader() {
 }
 
 function hideRightPanelStats() {
-    // Inject CSS to hide the right panel progress statistics and widen problem column
+    console.log("CF Tracker: Attempting to hide right panel...");
+    
+    // Inject CSS to hide only the right panel and widen problem column
     if (!document.getElementById('cf-tracker-hide-stats')) {
         const style = document.createElement('style');
         style.id = 'cf-tracker-hide-stats';
         style.textContent = `
-            /* Hide the entire right sidebar */
+            /* Hide only the right sidebar (aside element) */
             aside {
                 display: none !important;
+                visibility: hidden !important;
             }
             
             /* Make Problem column wider */
             td:nth-child(2),
             th:nth-child(2) {
-                min-width: 300px !important;
+                min-width: 400px !important;
+                max-width: 600px !important;
             }
         `;
         document.head.appendChild(style);
+        console.log('CF Tracker: CSS injected to hide aside and widen problem column');
     }
+    
+    // Try direct manipulation after a delay (only for aside elements)
+    setTimeout(() => {
+        const asideElements = document.querySelectorAll('aside');
+        console.log(`CF Tracker: Found ${asideElements.length} aside elements`);
+        asideElements.forEach((aside, index) => {
+            console.log(`CF Tracker: Hiding aside element ${index}`);
+            aside.style.display = 'none';
+        });
+    }, 500);
 }
 
 // Helpers

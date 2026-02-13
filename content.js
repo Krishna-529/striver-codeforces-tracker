@@ -84,13 +84,15 @@ function startObserver() {
 function scanPage() {
     if (!isDataReady) return;
 
+    // Add Rating column header if not already present
+    addRatingColumnHeader();
+
     // We select ALL 'a' tags. This is fast, don't worry.
     const links = document.querySelectorAll('a');
     let markedCount = 0;
 
     links.forEach(link => {
         // If we already marked this SPECIFIC link element, skip it.
-        // If the website wiped the DOM and replaced it, this attribute is lost, so we run again. Perfect.
         if (link.dataset.cfProcessed) return;
 
         const href = link.href;
@@ -102,69 +104,92 @@ function scanPage() {
             // Standardize ID (e.g., 1234A)
             const problemId = `${match[1]}${match[2].toUpperCase()}`;
             
-            // Mark as processed immediately so we don't duplicate badges
+            // Mark as processed immediately
             link.dataset.cfProcessed = "true";
 
-            // 1. Add Rating Badge
-            if (globalRatingsMap.has(problemId)) {
+            // Find the row (tr) containing this link
+            let row = link.closest('tr');
+            if (!row) return;
+
+            // 1. Add Rating Cell
+            if (globalRatingsMap.has(problemId) && !row.querySelector('.cf-rating-cell')) {
                 const rating = globalRatingsMap.get(problemId);
-                const badge = document.createElement("span");
-                badge.innerText = `${rating}`;
                 
-                // Badge Styles - Cleaner and more compact
-                badge.style.cssText = `
-                    font-size: 9px;
-                    font-weight: 600;
-                    margin-left: 6px;
-                    padding: 1px 5px;
-                    border-radius: 3px;
-                    color: white;
-                    display: inline-block;
+                // Create new table cell for rating
+                const ratingCell = document.createElement('td');
+                ratingCell.className = 'cf-rating-cell';
+                ratingCell.style.cssText = `
+                    text-align: center;
+                    padding: 8px 12px;
+                    font-weight: 700;
+                    font-size: 13px;
                     vertical-align: middle;
-                    line-height: 1.4;
-                    letter-spacing: 0.3px;
-                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
                 `;
-
-                // Color Coding - Softer colors
-                if (rating < 1200) badge.style.backgroundColor = "#999999";       
-                else if (rating < 1400) badge.style.backgroundColor = "#43a047";  
-                else if (rating < 1600) badge.style.backgroundColor = "#00acc1";  
-                else if (rating < 1900) badge.style.backgroundColor = "#5e35b1";  
-                else if (rating < 2100) badge.style.backgroundColor = "#d81b60";     
-                else if (rating < 2400) badge.style.backgroundColor = "#f57c00";  
-                else badge.style.backgroundColor = "#e53935";                     
-
-                link.appendChild(badge);
+                
+                ratingCell.innerText = rating;
+                
+                // Color coding - text color only, no background
+                if (rating < 1200) ratingCell.style.color = "#808080";       
+                else if (rating < 1400) ratingCell.style.color = "#008000";  
+                else if (rating < 1600) ratingCell.style.color = "#03a89e";  
+                else if (rating < 1900) ratingCell.style.color = "#0000ff";  
+                else if (rating < 2100) ratingCell.style.color = "#a0a";     
+                else if (rating < 2400) ratingCell.style.color = "#ff8c00";  
+                else ratingCell.style.color = "#ff0000";
+                
+                // Insert the rating cell after the "Revision" column (last column)
+                row.appendChild(ratingCell);
                 markedCount++;
             }
 
-            // 2. Mark Solved - Subtle and clean
+            // 2. Mark Solved - Just add checkmark before the problem name once
             if (globalSolvedSet.has(problemId)) {
-                link.style.position = "relative";
-                link.style.paddingLeft = "18px";
-                
-                // Add a subtle checkmark icon before the link
-                const check = document.createElement("span");
-                check.innerText = "✓";
-                check.style.cssText = `
-                    position: absolute;
-                    left: 2px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    color: #10b981;
-                    font-weight: bold;
-                    font-size: 14px;
-                `;
-                link.style.position = "relative";
-                link.insertBefore(check, link.firstChild);
-                
-                // Subtle styling without overwhelming the UI
-                link.style.color = "#6b7280";
-                link.style.textDecoration = "none";
+                if (!link.querySelector('.cf-check-mark')) {
+                    link.style.position = "relative";
+                    link.style.paddingLeft = "20px";
+                    
+                    // Add a subtle checkmark icon before the link
+                    const check = document.createElement("span");
+                    check.className = "cf-check-mark";
+                    check.innerText = "✓";
+                    check.style.cssText = `
+                        position: absolute;
+                        left: 2px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        color: #10b981;
+                        font-weight: bold;
+                        font-size: 14px;
+                    `;
+                    link.insertBefore(check, link.firstChild);
+                    
+                    // Subtle styling without overwhelming the UI
+                    link.style.color = "#6b7280";
+                    link.style.textDecoration = "none";
+                }
             }
         }
     });
+}
+
+function addRatingColumnHeader() {
+    // Find the table header row
+    const headerRow = document.querySelector('thead tr, table tr:first-child');
+    if (!headerRow || headerRow.querySelector('.cf-rating-header')) return;
+    
+    // Create header cell for Rating column
+    const headerCell = document.createElement('th');
+    headerCell.className = 'cf-rating-header';
+    headerCell.innerText = 'Rating';
+    headerCell.style.cssText = `
+        text-align: center;
+        padding: 8px 12px;
+        font-weight: 600;
+        vertical-align: middle;
+    `;
+    
+    // Append to the header row
+    headerRow.appendChild(headerCell);
 }
 
 // Helpers

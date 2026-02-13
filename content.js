@@ -111,41 +111,57 @@ function scanPage() {
                 const badge = document.createElement("span");
                 badge.innerText = `${rating}`;
                 
-                // Badge Styles
+                // Badge Styles - Cleaner and more compact
                 badge.style.cssText = `
-                    font-size: 10px;
-                    font-weight: bold;
-                    margin-left: 8px;
-                    padding: 2px 6px;
-                    border-radius: 10px;
+                    font-size: 9px;
+                    font-weight: 600;
+                    margin-left: 6px;
+                    padding: 1px 5px;
+                    border-radius: 3px;
                     color: white;
                     display: inline-block;
                     vertical-align: middle;
+                    line-height: 1.4;
+                    letter-spacing: 0.3px;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
                 `;
 
-                // Color Coding
-                if (rating < 1200) badge.style.backgroundColor = "#808080";       
-                else if (rating < 1400) badge.style.backgroundColor = "#008000";  
-                else if (rating < 1600) badge.style.backgroundColor = "#03a89e";  
-                else if (rating < 1900) badge.style.backgroundColor = "#0000ff";  
-                else if (rating < 2100) badge.style.backgroundColor = "#a0a";     
-                else if (rating < 2400) badge.style.backgroundColor = "#ff8c00";  
-                else badge.style.backgroundColor = "#ff0000";                     
+                // Color Coding - Softer colors
+                if (rating < 1200) badge.style.backgroundColor = "#999999";       
+                else if (rating < 1400) badge.style.backgroundColor = "#43a047";  
+                else if (rating < 1600) badge.style.backgroundColor = "#00acc1";  
+                else if (rating < 1900) badge.style.backgroundColor = "#5e35b1";  
+                else if (rating < 2100) badge.style.backgroundColor = "#d81b60";     
+                else if (rating < 2400) badge.style.backgroundColor = "#f57c00";  
+                else badge.style.backgroundColor = "#e53935";                     
 
                 link.appendChild(badge);
                 markedCount++;
             }
 
-            // 2. Mark Solved
+            // 2. Mark Solved - Subtle and clean
             if (globalSolvedSet.has(problemId)) {
-                link.style.opacity = "0.6"; 
-                link.style.backgroundColor = "#e6fffa";
+                link.style.position = "relative";
+                link.style.paddingLeft = "18px";
                 
-                // Add Checkmark
+                // Add a subtle checkmark icon before the link
                 const check = document.createElement("span");
-                check.innerText = " ✅";
-                check.style.marginLeft = "5px";
-                link.appendChild(check);
+                check.innerText = "✓";
+                check.style.cssText = `
+                    position: absolute;
+                    left: 2px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #10b981;
+                    font-weight: bold;
+                    font-size: 14px;
+                `;
+                link.style.position = "relative";
+                link.insertBefore(check, link.firstChild);
+                
+                // Subtle styling without overwhelming the UI
+                link.style.color = "#6b7280";
+                link.style.textDecoration = "none";
             }
         }
     });

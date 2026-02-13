@@ -123,12 +123,13 @@ function scanPage() {
                 ratingCell.className = 'cf-rating-cell';
                 ratingCell.style.cssText = `
                     text-align: center;
-                    padding: 8px 6px;
+                    padding: 8px 4px;
                     font-weight: 700;
                     font-size: 13px;
                     vertical-align: middle;
-                    width: 65px;
-                    min-width: 65px;
+                    width: 50px;
+                    min-width: 50px;
+                    max-width: 50px;
                 `;
                 
                 ratingCell.innerText = rating;
@@ -154,31 +155,11 @@ function scanPage() {
                 markedCount++;
             }
 
-            // 2. Mark Solved - Just add checkmark before the problem name once
+            // 2. Mark Solved - Just dim the text, no checkmark
             if (globalSolvedSet.has(problemId)) {
-                if (!link.querySelector('.cf-check-mark')) {
-                    link.style.position = "relative";
-                    link.style.paddingLeft = "20px";
-                    
-                    // Add a subtle checkmark icon before the link
-                    const check = document.createElement("span");
-                    check.className = "cf-check-mark";
-                    check.innerText = "✓";
-                    check.style.cssText = `
-                        position: absolute;
-                        left: 2px;
-                        top: 50%;
-                        transform: translateY(-50%);
-                        color: #10b981;
-                        font-weight: bold;
-                        font-size: 14px;
-                    `;
-                    link.insertBefore(check, link.firstChild);
-                    
-                    // Subtle styling without overwhelming the UI
-                    link.style.color = "#6b7280";
-                    link.style.textDecoration = "none";
-                }
+                // Subtle styling to show solved status
+                link.style.color = "#6b7280";
+                link.style.textDecoration = "none";
             }
         }
     });
@@ -195,11 +176,12 @@ function addRatingColumnHeader() {
     headerCell.innerText = 'Rating';
     headerCell.style.cssText = `
         text-align: center;
-        padding: 8px 6px;
+        padding: 8px 4px;
         font-weight: 600;
         vertical-align: middle;
-        width: 65px;
-        min-width: 65px;
+        width: 50px;
+        min-width: 50px;
+        max-width: 50px;
     `;
     
     // Insert rating header at the correct position (after Practice, before Note)
@@ -214,17 +196,20 @@ function addRatingColumnHeader() {
 }
 
 function hideRightPanelStats() {
-    // Inject CSS to hide the right panel progress statistics
+    // Inject CSS to hide the right panel progress statistics and widen problem column
     if (!document.getElementById('cf-tracker-hide-stats')) {
         const style = document.createElement('style');
         style.id = 'cf-tracker-hide-stats';
         style.textContent = `
-            /* Hide the Progress panel on the right side */
-            aside [class*="progress"],
-            aside [class*="Progress"],
-            div[class*="progress"]:has(canvas),
-            div:has(> div > canvas) {
+            /* Hide the entire right sidebar */
+            aside {
                 display: none !important;
+            }
+            
+            /* Make Problem column wider */
+            td:nth-child(2),
+            th:nth-child(2) {
+                min-width: 300px !important;
             }
         `;
         document.head.appendChild(style);

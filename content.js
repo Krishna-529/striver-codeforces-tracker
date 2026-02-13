@@ -198,15 +198,23 @@ function addRatingColumnHeader() {
 function hideRightPanelStats() {
     console.log("CF Tracker: Attempting to hide right panel...");
     
-    // Inject CSS to hide only the right panel and widen problem column
+    // Inject CSS to hide the right panel with multiple selectors
     if (!document.getElementById('cf-tracker-hide-stats')) {
         const style = document.createElement('style');
         style.id = 'cf-tracker-hide-stats';
         style.textContent = `
-            /* Hide only the right sidebar (aside element) */
-            aside {
+            /* Hide the entire right sidebar with multiple selectors */
+            aside,
+            [class*="sidebar"],
+            [class*="Sidebar"],
+            [class*="right-panel"],
+            [class*="RightPanel"] {
                 display: none !important;
                 visibility: hidden !important;
+                opacity: 0 !important;
+                width: 0 !important;
+                height: 0 !important;
+                overflow: hidden !important;
             }
             
             /* Make Problem column wider */
@@ -215,20 +223,73 @@ function hideRightPanelStats() {
                 min-width: 400px !important;
                 max-width: 600px !important;
             }
+            
+            /* Expand main content to full width */
+            main {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
         `;
         document.head.appendChild(style);
-        console.log('CF Tracker: CSS injected to hide aside and widen problem column');
+        console.log('CF Tracker: CSS injected to hide right panel');
     }
     
-    // Try direct manipulation after a delay (only for aside elements)
-    setTimeout(() => {
+    // Function to hide right panel elements
+    const hideElements = () => {
+        // Method 1: Hide aside elements
         const asideElements = document.querySelectorAll('aside');
         console.log(`CF Tracker: Found ${asideElements.length} aside elements`);
         asideElements.forEach((aside, index) => {
             console.log(`CF Tracker: Hiding aside element ${index}`);
-            aside.style.display = 'none';
+            aside.style.cssText = 'display: none !important; visibility: hidden !important;';
         });
-    }, 500);
+        
+        // Method 2: Hide by text content (Progress panel)
+        document.querySelectorAll('div').forEach(div => {
+            const heading = div.querySelector('h3, h2');
+            if (heading && heading.textContent.trim() === 'Progress') {
+                console.log('CF Tracker: Found Progress heading, hiding parent');
+                let parent = div;
+                while (parent && parent.tagName !== 'BODY') {
+                    if (parent.tagName === 'ASIDE' || parent.classList.toString().includes('sidebar')) {
+                        parent.style.cssText = 'display: none !important;';
+                        break;
+                    }
+                    parent = parent.parentElement;
+                }
+            }
+        });
+        
+        // Method 3: Hide elements containing specific text patterns
+        const progressTexts = ['Progress', 'Calendar + Roadmap', 'Sessions', 'Daily Planner'];
+        document.querySelectorAll('div > h3').forEach(heading => {
+            if (progressTexts.some(text => heading.textContent.includes(text))) {
+                let container = heading.closest('aside, [class*="sidebar"]');
+                if (container) {
+                    console.log(`CF Tracker: Hiding container with heading: ${heading.textContent}`);
+                    container.style.cssText = 'display: none !important;';
+                }
+            }
+        });
+    };
+    
+    // Run immediately
+    hideElements();
+    
+    // Run after delays to catch dynamically loaded content
+    setTimeout(hideElements, 500);
+    setTimeout(hideElements, 1000);
+    setTimeout(hideElements, 2000);
+    
+    // Set up MutationObserver to hide elements that appear later
+    const observer = new MutationObserver(() => {
+        hideElements();
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 }
 
 // Helpers

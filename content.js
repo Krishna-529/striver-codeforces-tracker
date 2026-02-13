@@ -61,6 +61,9 @@ async function fetchData(handle) {
 
     isDataReady = true;
     
+    // Hide the right panel statistics
+    hideRightPanelStats();
+    
     // --- THE FIX: Run immediately, then Watch, AND Poll ---
     scanPage(); 
     startObserver(); 
@@ -120,10 +123,12 @@ function scanPage() {
                 ratingCell.className = 'cf-rating-cell';
                 ratingCell.style.cssText = `
                     text-align: center;
-                    padding: 8px 12px;
+                    padding: 8px 6px;
                     font-weight: 700;
                     font-size: 13px;
                     vertical-align: middle;
+                    width: 65px;
+                    min-width: 65px;
                 `;
                 
                 ratingCell.innerText = rating;
@@ -137,8 +142,15 @@ function scanPage() {
                 else if (rating < 2400) ratingCell.style.color = "#ff8c00";  
                 else ratingCell.style.color = "#ff0000";
                 
-                // Insert the rating cell after the "Revision" column (last column)
-                row.appendChild(ratingCell);
+                // Insert rating cell at the correct position (after Practice, before Note)
+                // Table structure: Status(0) | Problem(1) | Practice(2) | [Rating should be 3] | Note(4) | Revision(5)
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 4) {
+                    // Insert before the 4th cell (index 3), making rating the new 4th column
+                    row.insertBefore(ratingCell, cells[3]);
+                } else {
+                    row.appendChild(ratingCell);
+                }
                 markedCount++;
             }
 
@@ -183,13 +195,40 @@ function addRatingColumnHeader() {
     headerCell.innerText = 'Rating';
     headerCell.style.cssText = `
         text-align: center;
-        padding: 8px 12px;
+        padding: 8px 6px;
         font-weight: 600;
         vertical-align: middle;
+        width: 65px;
+        min-width: 65px;
     `;
     
-    // Append to the header row
-    headerRow.appendChild(headerCell);
+    // Insert rating header at the correct position (after Practice, before Note)
+    // Header structure: Status(0) | Problem(1) | Practice(2) | [Rating should be 3] | Note(4) | Revision(5)
+    const headers = headerRow.querySelectorAll('th');
+    if (headers.length >= 4) {
+        // Insert before the 4th header (index 3), making rating the new 4th column
+        headerRow.insertBefore(headerCell, headers[3]);
+    } else {
+        headerRow.appendChild(headerCell);
+    }
+}
+
+function hideRightPanelStats() {
+    // Inject CSS to hide the right panel progress statistics
+    if (!document.getElementById('cf-tracker-hide-stats')) {
+        const style = document.createElement('style');
+        style.id = 'cf-tracker-hide-stats';
+        style.textContent = `
+            /* Hide the Progress panel on the right side */
+            aside [class*="progress"],
+            aside [class*="Progress"],
+            div[class*="progress"]:has(canvas),
+            div:has(> div > canvas) {
+                display: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
 }
 
 // Helpers
